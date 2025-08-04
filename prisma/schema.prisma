@@ -1,0 +1,23 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  type      QuestionType
+  text      String
+  image     String?
+  createdAt DateTime     @default(now())
+}
+
+enum QuestionType {
+  part1
+  part2
+}
