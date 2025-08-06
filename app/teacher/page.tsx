@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import QuestionForm from "../../components/QuestionForm";
 import SignoutBtn from "../../components/SignoutBtn";
 import Image from "next/image";
@@ -18,7 +18,11 @@ const TEACHER_PASSWORD = "letmein";
 export default function TeacherPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
+  // Check localStorage for auth
   useEffect(() => {
     const stored = localStorage.getItem("teacher-auth");
     if (stored === "true") {
@@ -35,8 +39,8 @@ export default function TeacherPage() {
       alert("Incorrect password.");
     }
   }
-  const [questions, setQuestions] = useState<Question[]>([]);
 
+  // Fetch questions
   useEffect(() => {
     fetch("/api/questions?type=part1")
       .then((res) => res.json())
@@ -48,6 +52,21 @@ export default function TeacherPage() {
           });
       });
   }, []);
+
+  // Handle delete manually
+  function handleDelete(id: string) {
+    setErrorMessage(null);
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("id", id);
+        await deleteQuestionAction(formData);
+        window.location.reload(); // Refresh to update list
+      } catch (err) {
+        setErrorMessage((err as Error).message);
+      }
+    });
+  }
 
   if (!isAuthenticated) {
     return (
@@ -80,6 +99,13 @@ export default function TeacherPage() {
       <hr className="my-6" />
 
       <h2 className="text-xl font-semibold mb-2">Existing Questions</h2>
+
+      {errorMessage && (
+        <div className="mb-4 p-3 rounded bg-red-100 text-red-700 border border-red-300">
+          {errorMessage}
+        </div>
+      )}
+
       <ul className="space-y-4" suppressHydrationWarning>
         {questions.map((q) => (
           <li key={q.id} className="border p-4 rounded-md">
@@ -96,15 +122,14 @@ export default function TeacherPage() {
                 height={200}
               />
             )}
-            <form action={deleteQuestionAction}>
-              <input type="hidden" name="id" value={q.id} />
-              <button
-                type="submit"
-                className="text-red-600 hover:underline text-sm"
-              >
-                Delete
-              </button>
-            </form>
+            <button
+              type="button"
+              onClick={() => handleDelete(q.id)}
+              className="text-red-600 hover:underline text-sm disabled:opacity-50"
+              disabled={isPending}
+            >
+              {isPending ? "Deleting..." : "Delete"}
+            </button>
           </li>
         ))}
       </ul>
