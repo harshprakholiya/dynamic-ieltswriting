@@ -6,7 +6,8 @@ import SplitView from "../../../components/SplitView";
 export default async function StudentSingleView({
   params,
 }: {
-  params: { id: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: { id: any };
 }) {
   const question = await prisma.question.findUnique({
     where: { id: params.id },
