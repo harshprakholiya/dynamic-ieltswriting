@@ -1,12 +1,13 @@
+// app/student/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
 import SplitView from "../../../components/SplitView";
 
-interface PageProps {
+export default async function StudentSingleView({
+  params,
+}: {
   params: { id: string };
-}
-
-export default async function StudentSingleView({ params }: PageProps) {
+}) {
   const question = await prisma.question.findUnique({
     where: { id: params.id },
   });
