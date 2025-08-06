@@ -5,12 +5,13 @@ import { prisma } from '../../../../lib/prisma';
 import ExamEditor from '../../../../components/student/ExamEditor';
 
 
-interface PageProps {
-  params: { id: string };
-  searchParams: { mode?: string };
-}
+// interface PageProps {
+//   params: { id: string };
+//   searchParams: { mode?: string };
+// }
 
-export default async function ExamPage({ params, searchParams }: PageProps) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function ExamPage({ params, searchParams }: any) {
   const mode = searchParams.mode === 'hard' ? 'hard' : 'simple';
   const exam = await prisma.exam.findUnique({
     where: { id: params.id },
