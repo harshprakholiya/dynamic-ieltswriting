@@ -1,19 +1,22 @@
-// app/student/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
 import SplitView from "../../../components/SplitView";
+import { type Metadata } from "next";
 
-export default async function StudentSingleView({
-  params,
-}: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params: { id: any };
-}) {
-  const question = await prisma.question.findUnique({
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default async function StudentSingleView({ params }: PageProps) {
+  const rawQuestion = await prisma.question.findUnique({
     where: { id: params.id },
   });
 
-  if (!question) return notFound();
+  if (!rawQuestion) return notFound();
+
+  const question = JSON.parse(JSON.stringify(rawQuestion)); // Ensure serializable
 
   return <SplitView question={question} />;
 }
