@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma'; // adjust path as needed
+import { prisma } from '../../../lib/prisma';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
@@ -22,8 +22,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
+
   const type = formData.get('type') as 'part1' | 'part2';
   const text = formData.get('text') as string;
+  const subtype = (formData.get('subtype') as string) || "default"; // <-- fallback if not provided
   const file = formData.get('image') as File | null;
 
   let imagePath: string | null = null;
@@ -40,10 +42,31 @@ export async function POST(req: NextRequest) {
   await prisma.question.create({
     data: {
       type,
+      subtype, // <-- Always send subtype to Prisma
       text,
       image: imagePath,
     },
   });
 
   return NextResponse.json({ message: 'Question added' });
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    await prisma.question.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: 'Question deleted' }, { status: 200 });
+  } catch (error) {
+    console.error('[Delete Question Error]', error);
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+  }
 }

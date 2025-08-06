@@ -9,10 +9,20 @@ export default async function StudentPage() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Select a Question</h1>
+    <div className="max-w-3xl mx-auto p-6 space-y-10">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Select a Question</h1>
+
+        <Link
+          href="/student/exams"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          📝 Exams
+        </Link>
+      </header>
+
       <ul className="space-y-4">
-        {questions.map((q) => (
+        {questions.map((q: {id: string; type: string; text: string}) => (
           <li key={q.id} className="border p-4 rounded-md">
             <div className="text-sm text-gray-500 capitalize mb-1">Type: {q.type}</div>
             <div className="text-base mb-2">{q.text}</div>

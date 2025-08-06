@@ -9,15 +9,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Exam {
+  id        String   @id @default(uuid())
+  title     String
+  date      DateTime @default(now())
+
+  part1     Question @relation("ExamPart1", fields: [part1Id], references: [id])
+  part1Id   String   @unique
+
+  part2     Question @relation("ExamPart2", fields: [part2Id], references: [id])
+  part2Id   String   @unique
+
+  createdAt DateTime @default(now())
+}
+
+
 model Question {
-  id        String       @id @default(cuid())
+  id        String       @id @default(uuid())
   type      QuestionType
+  subtype   String
   text      String
   image     String?
   createdAt DateTime     @default(now())
+
+  examPart1 Exam?        @relation("ExamPart1")
+  examPart2 Exam?        @relation("ExamPart2")
 }
 
 enum QuestionType {
   part1
   part2
 }
+
