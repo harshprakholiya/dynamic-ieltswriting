@@ -13,7 +13,7 @@ export default async function StudentSingleView({
 
   if (!rawQuestion) return notFound();
 
-  const question = JSON.parse(JSON.stringify(rawQuestion));
+  const question = JSON.parse(JSON.stringify(rawQuestion)); // to make it serializable
 
   return <SplitView question={question} />;
 }
