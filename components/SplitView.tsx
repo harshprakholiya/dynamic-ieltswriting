@@ -2,21 +2,19 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import type { Question } from "@prisma/client";
 import Editor from "./Editor";
-import type { Question } from '@prisma/client';
 
 export default function SplitView({ question }: { question: Question }) {
-  const [leftWidth, setLeftWidth] = useState(50); // percent width
+  const [leftWidth, setLeftWidth] = useState(50);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isResizing = useRef(false);
 
   useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
       if (!isResizing.current || !containerRef.current) return;
-
       const rect = containerRef.current.getBoundingClientRect();
       const newLeftWidth = ((e.clientX - rect.left) / rect.width) * 100;
-
       if (newLeftWidth > 20 && newLeftWidth < 80) {
         setLeftWidth(newLeftWidth);
       }
@@ -30,7 +28,6 @@ export default function SplitView({ question }: { question: Question }) {
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
-
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
@@ -45,13 +42,12 @@ export default function SplitView({ question }: { question: Question }) {
 
   return (
     <div ref={containerRef} className="flex flex-row h-screen overflow-hidden">
-      {/* Left Pane */}
       <div
         className="overflow-y-auto p-6 bg-gray-50 border-r"
         style={{ width: `${leftWidth}%` }}
       >
         <h2 className="text-xl font-semibold mb-4">
-          {question.type === 'part1' ? 'Part 1 Question' : 'Part 2 Question'}
+          {question.type === "part1" ? "Part 1 Question" : "Part 2 Question"}
         </h2>
 
         <div className="border p-4 rounded-md bg-white shadow-sm">
@@ -71,13 +67,11 @@ export default function SplitView({ question }: { question: Question }) {
         </div>
       </div>
 
-      {/* Divider */}
       <div
         className="w-1 bg-gray-300 cursor-col-resize"
         onMouseDown={startResizing}
       />
 
-      {/* Right Pane */}
       <div className="overflow-y-auto p-6 flex-1">
         <Editor question={question.text} />
       </div>
