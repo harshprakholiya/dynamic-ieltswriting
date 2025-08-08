@@ -1,79 +1,61 @@
 "use client";
+import React, { useRef, useState } from "react";
 
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import type { Question } from "@prisma/client";
-import Editor from "./Editor";
+export default function ResizableSplit({
+  left,
+  right,
+}: {
+  left: React.ReactNode;
+  right: React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [leftWidth, setLeftWidth] = useState(50); // initial width in %
 
-export default function SplitView({ question }: { question: Question }) {
-  const [leftWidth, setLeftWidth] = useState(50);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const isResizing = useRef(false);
+  const isDragging = useRef(false);
 
-  useEffect(() => {
-    function handleMouseMove(e: MouseEvent) {
-      if (!isResizing.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const newLeftWidth = ((e.clientX - rect.left) / rect.width) * 100;
-      if (newLeftWidth > 20 && newLeftWidth < 80) {
-        setLeftWidth(newLeftWidth);
-      }
+  const onMouseDown = () => {
+    isDragging.current = true;
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const containerWidth = containerRef.current.getBoundingClientRect().width;
+    const newLeftWidth = (e.clientX / containerWidth) * 100;
+    if (newLeftWidth > 10 && newLeftWidth < 90) {
+      setLeftWidth(newLeftWidth);
     }
+  };
 
-    function handleMouseUp() {
-      isResizing.current = false;
-      document.body.style.cursor = "default";
-      document.body.style.userSelect = "auto";
-    }
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  function startResizing() {
-    isResizing.current = true;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }
+  const onMouseUp = () => {
+    isDragging.current = false;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
 
   return (
-    <div ref={containerRef} className="flex flex-row h-screen overflow-hidden">
+    <div
+      ref={containerRef}
+      className="flex w-full h-screen relative overflow-hidden"
+    >
       <div
-        className="overflow-y-auto p-6 bg-gray-50 border-r"
+        className="h-full overflow-auto border-r"
         style={{ width: `${leftWidth}%` }}
       >
-        <h2 className="text-xl font-semibold mb-4">
-          {question.type === "part1" ? "Part 1 Question" : "Part 2 Question"}
-        </h2>
-
-        <div className="border p-4 rounded-md bg-white shadow-sm">
-          <div className="text-sm text-gray-500 mb-1 capitalize">
-            Type: {question.type}
-          </div>
-          <div className="text-base mb-3">{question.text}</div>
-          {question.image && (
-            <Image
-              src={question.image}
-              alt="Question"
-              width={400}
-              height={250}
-              className="rounded shadow-md"
-            />
-          )}
-        </div>
+        {left}
       </div>
 
       <div
-        className="w-1 bg-gray-300 cursor-col-resize"
-        onMouseDown={startResizing}
+        className="w-1 bg-gray-400 cursor-col-resize"
+        onMouseDown={onMouseDown}
       />
 
-      <div className="overflow-y-auto p-6 flex-1">
-        <Editor question={question.text} />
+      <div
+        className="flex-1 h-full overflow-auto"
+        style={{ width: `${100 - leftWidth}%` }}
+      >
+        {right}
       </div>
     </div>
   );

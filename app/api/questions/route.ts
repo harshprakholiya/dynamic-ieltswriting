@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   await prisma.question.create({
     data: {
       type,
-      subtype, // <-- Always send subtype to Prisma
+      subtype, 
       text,
       image: imagePath,
     },

@@ -3,14 +3,22 @@ import { prisma } from "../../../lib/prisma";
 import Editor from "../../../components/Editor";
 import Image from "next/image";
 
-export const metadata = {
+import type { Metadata } from "next";
+import ResizableSplit from "../../../components/SplitView";
+
+// Metadata export (optional, can be dynamic if needed)
+export const metadata: Metadata = {
   title: "IELTS Writing Question",
   description: "Write your answer in the editor",
 };
 
-const Page = async ({ params }: { params: { id: string } }) => {
+// Page component with safe param resolution
+export default async function Page({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  const resolvedParams = await Promise.resolve(params);
+  const id = resolvedParams.id;
+
   const question = await prisma.question.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!question) return notFound();
@@ -18,7 +26,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
       {/* Left Side */}
-      <div className="w-full md:w-1/2 p-6 overflow-y-auto bg-gray-50 border-r">
+      {/* <div className="w-full md:w-1/2 p-6 overflow-y-auto bg-gray-50 border-r">
         <h2 className="text-xl font-semibold mb-4">
           {question.type === "part1" ? "Task 1" : "Task 2"} Question
         </h2>
@@ -32,14 +40,36 @@ const Page = async ({ params }: { params: { id: string } }) => {
             className="rounded-md shadow-md"
           />
         )}
-      </div>
+      </div> */}
 
       {/* Right Side */}
-      <div className="w-full md:flex-1 p-6 overflow-y-auto">
+      {/* <div className="w-full md:flex-1 p-6 overflow-y-auto">
         <Editor question={question.text} />
-      </div>
-    </div>
-  );
-};
+      </div> */}
 
-export default Page;
+
+      <ResizableSplit
+        left={<div className="w-full p-6 overflow-y-auto">
+        <h2 className="text-xl font-semibold mb-4">
+          {question.type === "part1" ? "Task 1" : "Task 2"} Question
+        </h2>
+        <p className="mb-3">{question.text}</p>
+        {question.image && (
+          <Image
+            src={question.image}
+            alt="Task Image"
+            width={400}
+            height={300}
+            className="rounded-md shadow-md"
+          />
+        )}
+      </div>}
+      right={<div className="w-full md:flex-1 p-6 overflow-y-auto">
+        <Editor question={question.text} />
+      </div>}
+      
+  />
+  </div>
+);
+}
+
