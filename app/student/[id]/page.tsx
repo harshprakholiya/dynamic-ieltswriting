@@ -13,9 +13,8 @@ export const metadata: Metadata = {
 };
 
 // Page component with safe param resolution
-export default async function Page({ params }: { params: { id: string } | Promise<{ id: string }> }) {
-  const resolvedParams = await Promise.resolve(params);
-  const id = resolvedParams.id;
+export default async function Page({ params }: { params: { id: string } }) {
+  const id = params.id;
 
   const question = await prisma.question.findUnique({
     where: { id },
@@ -25,29 +24,6 @@ export default async function Page({ params }: { params: { id: string } | Promis
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      {/* Left Side */}
-      {/* <div className="w-full md:w-1/2 p-6 overflow-y-auto bg-gray-50 border-r">
-        <h2 className="text-xl font-semibold mb-4">
-          {question.type === "part1" ? "Task 1" : "Task 2"} Question
-        </h2>
-        <p className="mb-3">{question.text}</p>
-        {question.image && (
-          <Image
-            src={question.image}
-            alt="Task Image"
-            width={400}
-            height={300}
-            className="rounded-md shadow-md"
-          />
-        )}
-      </div> */}
-
-      {/* Right Side */}
-      {/* <div className="w-full md:flex-1 p-6 overflow-y-auto">
-        <Editor question={question.text} />
-      </div> */}
-
-
       <ResizableSplit
         left={<div className="w-full p-6 overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">
@@ -65,7 +41,7 @@ export default async function Page({ params }: { params: { id: string } | Promis
         )}
       </div>}
       right={<div className="w-full md:flex-1 p-6 overflow-y-auto">
-        <Editor question={question.text} />
+        {/* <Editor question={question.text} /> */}
       </div>}
       
   />
